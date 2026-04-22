@@ -1,8 +1,6 @@
 name: KOFIA Monitor
 
 on:
-  schedule:
-    - cron: '*/10 * * * *'  # 10분마다 (테스트용)
   workflow_dispatch:
 
 jobs:
