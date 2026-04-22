@@ -1,0 +1,39 @@
+name: KOFIA Monitor
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'  # 10분마다 (테스트용)
+  workflow_dispatch:
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Python 설치
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: 라이브러리 설치
+        run: pip install requests beautifulsoup4
+
+      - name: 모니터 실행
+        env:
+          SENDER_EMAIL: ${{ secrets.SENDER_EMAIL }}
+          SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
+          RECEIVER_EMAIL: ${{ secrets.RECEIVER_EMAIL }}
+        run: python monitor.py
+
+      - name: last_seq 저장
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add last_seq.txt
+          git diff --staged --quiet || git commit -m "Update last_seq"
+          git push
