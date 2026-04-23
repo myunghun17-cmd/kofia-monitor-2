@@ -1,7 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
 import smtplib
-import json
 import os
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -11,7 +10,7 @@ STATE_FILE = "last_seq.txt"
 
 SENDER_EMAIL = os.environ["SENDER_EMAIL"]
 SENDER_PASSWORD = os.environ["SENDER_PASSWORD"]
-RECEIVER_EMAIL = os.environ["RECEIVER_EMAIL"]
+RECEIVER_EMAILS = os.environ["RECEIVER_EMAIL"].split(",")
 
 def get_latest_posts():
     res = requests.get(URL, headers={"User-Agent": "Mozilla/5.0"})
@@ -33,7 +32,7 @@ def send_email(new_posts):
     msg = MIMEMultipart()
     msg["Subject"] = f"[KOFIA 알림] 새 안내사항 {len(new_posts)}건"
     msg["From"] = SENDER_EMAIL
-    msg["To"] = RECEIVER_EMAIL
+    msg["To"] = ", ".join(RECEIVER_EMAILS)
 
     body = "금융투자협회 안내사항 새 글이 올라왔습니다.\n\n"
     for p in new_posts:
@@ -44,7 +43,7 @@ def send_email(new_posts):
 
     with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
         server.login(SENDER_EMAIL, SENDER_PASSWORD)
-        server.sendmail(SENDER_EMAIL, RECEIVER_EMAIL, msg.as_string())
+        server.sendmail(SENDER_EMAIL, RECEIVER_EMAILS, msg.as_string())
     print("이메일 발송 완료!")
 
 def main():
